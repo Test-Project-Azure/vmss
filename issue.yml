@@ -1,0 +1,38 @@
+//Add ONE wrapper script (repo-level)
+//terraform-pipelines/scripts/tf.sh
+-->scripts/tf.sh
+
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Make terraform visible to Azure DevOps agent shells
+export PATH=/usr/local/bin:/usr/bin:$PATH
+
+exec terraform "$@"
+
+chmod +x scripts/tf.sh
+
+//templates/terraform-init.yml
+- script: |
+    ./scripts/tf.sh init \
+      -backend-config=resource_group_name=${{ parameters.backend_rgname }} \
+      -backend-config=storage_account_name=${{ parameters.backend_stname }} \
+      -backend-config=container_name=${{ parameters.backend_ctname }} \
+      -backend-config=access_key=${{ parameters.backend_key }} \
+      -backend-config=key=${{ parameters.backend_acckey }}
+
+
+//templates/terraform-validate.yml
+- script: |
+    ./scripts/tf.sh validate
+
+//templates/terraform-plan.yml
+- script: |
+    ./scripts/tf.sh plan -input=false \
+      -out=${{ parameters.platform }}.${{ parameters.environment }}.plan \
+      -var-file=${{ parameters.platform }}.${{ parameters.environment }}.tfvars \
+      -var="tenant_id=${{ parameters.tenant_id }}" \
+      -var="client_id=${{ parameters.client_id }}" \
+      -var="client_secret=${{ parameters.secret }}"
+
+

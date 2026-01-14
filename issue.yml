@@ -7,7 +7,7 @@ set -euo pipefail
 
 # Make terraform visible to Azure DevOps agent shells
 export PATH=/usr/local/bin:/usr/bin:$PATH
-
+mkdir -p /opt/ado-agent/.terraform.d/plugin-cache
 exec terraform "$@"
 
 chmod +x scripts/tf.sh
